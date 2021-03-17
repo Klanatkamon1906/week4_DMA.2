@@ -48,6 +48,13 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 uint32_t ADCData[4]={0};
 uint8_t test = 0;
+uint8_t PressButton = 0;
+uint32_t Random = 0;
+uint32_t TimePushButton = 0;
+uint32_t TimePing = 0;
+uint32_t TimeStamp = 0;
+uint32_t TimeRespond = 0;
+uint8_t i = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -99,7 +106,6 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_ADC_Start_DMA(&hadc1, ADCData, 4);
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -107,7 +113,34 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  test = 1;
+
+	  if(PressButton == 0)
+	  {
+		  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
+	  }
+	  else if(PressButton == 1)
+	  {
+		  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
+		  if(i == 1)
+		  {
+			  if((HAL_GetTick() - TimePushButton) >= Random)
+				  {
+					  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
+					  TimePing = HAL_GetTick();
+					  i += 1;
+				  }
+		  }
+		  else
+		  {
+			 HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
+		  }
+
+	  }
+	  else
+	  {
+		  PressButton = 0;
+	  }
+
     /* USER CODE BEGIN 3 */
 
   }
@@ -197,7 +230,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_28CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -323,9 +356,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin == GPIO_PIN_13)
 	{
-		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-		test = 2;
+		test = (test + 1) % 2;
+		PressButton = (PressButton + 1) % 2;
+		TimePushButton = HAL_GetTick();
+		Random = 1000 + (((22695477 * ADCData[0]) + ADCData[1]) % 10000);
+		TimeRespond = TimePushButton - TimePing;
+		i = 1;
 	}
+
 //	test = 3;
 
 }
