@@ -47,7 +47,6 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 uint32_t ADCData[4]={0};
-uint8_t test = 0;
 uint8_t PressButton = 0;
 uint32_t Random = 0;
 uint32_t TimePushButton = 0;
@@ -356,7 +355,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin == GPIO_PIN_13)
 	{
-		test = (test + 1) % 2;
 		PressButton = (PressButton + 1) % 2;
 		TimePushButton = HAL_GetTick();
 		Random = 1000 + (((22695477 * ADCData[0]) + ADCData[1]) % 10000);
